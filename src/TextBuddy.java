@@ -55,7 +55,7 @@ public class TextBuddy {
 				break;
 	
 			case "display":
-				print();
+				display(contents);
 				break;
 	
 			case "delete":
@@ -70,6 +70,10 @@ public class TextBuddy {
 				sort();
 				break;
 				
+			case "search":
+				search();
+				break;
+			
 			case "exit":
 				saveAndExit();
 				break;
@@ -78,6 +82,19 @@ public class TextBuddy {
 				inputError();
 				break;
 		}
+	}
+	
+	public void search() {
+		String searchTerm = scanner.next();
+		ArrayList<String> results = new ArrayList<String>();
+		
+		for (String current : contents) {
+			if (current.contains(searchTerm)) {
+				results.add(current);
+			}
+		}
+		
+		display(results);
 	}
 	
 	public void sort() {
@@ -101,8 +118,8 @@ public class TextBuddy {
 
 		try {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-			for (int i = 0; i < contents.size(); i++) {
-				bw.write(contents.get(i));
+			for (String current : contents) {
+				bw.write(current);
 				bw.newLine();
 			}
 			bw.close();
@@ -124,7 +141,7 @@ public class TextBuddy {
 	}
 	
 	@Test
-	public void print() {
+	public void display(ArrayList<String> lines) {
 		int num = 1;
 		if (isEmpty()) {
 			String message = String.format(MESSAGE_EMPTY_FILE, fileName);
@@ -133,8 +150,8 @@ public class TextBuddy {
 			//check if it returns the right status message
 			assertEquals(message, fileName + " is empty.");
 		} else {
-			for (int i = 0; i < contents.size(); i++) {
-				printMessage(num + ". " + contents.get(i));
+			for (String current : lines) {
+				printMessage(num + ". " + current);
 				num++;
 			}
 		}
