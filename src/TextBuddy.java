@@ -1,4 +1,4 @@
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class TextBuddy {
@@ -30,6 +31,55 @@ public class TextBuddy {
 	Scanner scanner = new Scanner(System.in);
 	
 	public TextBuddy() {
+	}
+	
+	@Before
+	public void testSetup() {
+		fileName = "testFile.txt";
+		addLine("test line 0");
+		addLine("test line 1");
+	}
+	
+	@Test
+	public void fileTest() {
+		//check if file is created after method call
+		assertFalse(getFile(fileName).exists());
+		openOrCreateFile(fileName);
+		assertTrue(getFile(fileName).exists());
+	}
+	
+	
+	@Test
+	public void addTest() {
+		//check if "add" method returns the right status message
+		assertEquals(addLine("test line"), "added to " + fileName + ": \"test line\"");
+	}
+	
+	@Test
+	public void deleteTest() {
+		//check if "delete" method returns the right status message
+		assertEquals(deleteLine(-1), MESSAGE_INVALID_INPUT);
+		assertEquals(deleteLine(Integer.MAX_VALUE), MESSAGE_DELETE_ERROR);
+		assertEquals(deleteLine(0), "deleted from " + fileName + ": " + "\"test line 0\"");
+	}
+	
+	@Test
+	public void clearTest() {
+		//check if the "clear" method returns the right status message
+		assertEquals(clearContents(), "all content deleted from " + fileName + ".");
+		assertEquals(0, contents.size());
+	}
+	
+	@Test
+	public void searchTest() {
+		//Sample array list to compare against search results
+		ArrayList<String> testList = new ArrayList<String>();
+		testList.add("test line 0");
+		testList.add("test line 1");
+		
+		//check if the "search" method returns the right result
+		assertEquals(getSearchResults("line 0").get(0), "test line 0");
+		assertEquals(getSearchResults("line"), testList);
 	}
 	
 	//Initialize the program's state when launched
@@ -58,7 +108,7 @@ public class TextBuddy {
 				break;
 	
 			case "display":
-				display(contents);
+				display();
 				break;
 	
 			case "delete":
@@ -74,7 +124,7 @@ public class TextBuddy {
 				break;
 				
 			case "search":
-				searchAndDisplay();
+				search();
 				break;
 			
 			case "exit":
@@ -88,73 +138,70 @@ public class TextBuddy {
 	}
 	
 	//Reads and add input into contents
-	@Test
 	public void add() {
 		String line = scanner.nextLine().trim();
-		contents.add(line);
-		String message = String.format(MESSAGE_ADD, fileName, line);
+		String message = addLine(line);
 		printMessage(message);
-		
-		//check if it returns the right status message
-		assertEquals(message, "added to " + fileName + ": \"" + line + "\"");
 	}
 	
-	//Formats and display the contents of TextBuddy
-	public void display(ArrayList<String> lines) {
-		
-		if (isEmpty()) {
+	
+	private String addLine(String line) {
+		contents.add(line);
+		String message = String.format(MESSAGE_ADD, fileName, line);
+		return message;
+	}
+	
+	public void display() {
+		if (isEmptyContents()) {
 			String message = String.format(MESSAGE_EMPTY_FILE, fileName);
 			printMessage(message);
 		} else {
-			printLines(lines);
+			displayContents(contents);
 		}
 	}
 	
-	//Deletes the line number based on input
-	@Test
 	public void delete() {
 		int lineNumber = getLineNumber();
-		
-		if (isEmpty()) {
+		String message = deleteLine(lineNumber);
+		printMessage(message);
+	}
+	
+	//Deletes the line number based on input
+	public String deleteLine(int lineNumber) {		
+		if (isEmptyContents()) {
 			String message = String.format(MESSAGE_EMPTY_FILE, fileName);
-			printMessage(message);
-			
-			//check if it returns the right status message
-			assertEquals(message, fileName + " is empty.");
+			return message;
 		} else if (isNegativeInput(lineNumber)) {
-			printMessage(MESSAGE_INVALID_INPUT);
+			return MESSAGE_INVALID_INPUT;
 		} else if (isOutOfBoundIndex(lineNumber)) {
-			printMessage(MESSAGE_DELETE_ERROR);
+			return MESSAGE_DELETE_ERROR;
 		} else {
 			String line = getDeletedLine(lineNumber);
 			String message = String.format(MESSAGE_DELETE, fileName, line);
-			printMessage(message);
-			
-			//check if it returns the right status message
-			assertEquals(message, "deleted from " + fileName + ": \"" + line + "\"");
+			return message;
 		}
 	}
 	
 	//Clears the contents of TextBuddy
-	@Test
 	public void clear() {
+		String message = clearContents();
+		printMessage(message);
+	}
+
+	private String clearContents() {
 		initializeArray();
 		String message = String.format(MESSAGE_CLEAR, fileName);
-		printMessage(message);
-			
-		//check if the "clear" command returns the right status message
-		assertEquals(message, "all content deleted from " + fileName + ".");
-		//check if the file was actually cleared
-		assertEquals(0, contents.size());
+		return message;
 	}
 	
 	public void sort() {
 		Collections.sort(contents, String.CASE_INSENSITIVE_ORDER);
 	}
 	
-	public void searchAndDisplay() {
-		ArrayList<String> results = getSearchResults();
-		display(results);
+	public void search() {
+		String searchTerm = scanner.next();
+		ArrayList<String> results = getSearchResults(searchTerm);
+		displayContents(results);
 	}
 	
 	//Open file if it exists, otherwise create a new file
@@ -220,8 +267,7 @@ public class TextBuddy {
 	}
 	
 	//Searches the contents based on the search term and returns the result
-	private ArrayList<String> getSearchResults() {
-		String searchTerm = scanner.next();
+	private ArrayList<String> getSearchResults(String searchTerm) {
 		ArrayList<String> results = new ArrayList<String>();
 		
 		for (String current : contents) {
@@ -231,8 +277,9 @@ public class TextBuddy {
 		}
 		return results;
 	}
-
-	private void printLines(ArrayList<String> lines) {
+	
+	//Formats and display the parameter ArrayList
+	private void displayContents(ArrayList<String> lines) {
 		int num = 1;
 		for (String current : lines) {
 			printMessage(num + ". " + current);
@@ -262,7 +309,7 @@ public class TextBuddy {
 		}
 	}
 
-	public boolean isEmpty() {
+	public boolean isEmptyContents() {
 		if (contents.size() == 0) {
 			return true;
 		} else {
@@ -285,8 +332,6 @@ public class TextBuddy {
 		System.out.print(MESSAGE_PROMPT);
 	}
 	
-	
-
 	private File getFile(String fileName) {
 		String dir = System.getProperty("user.dir");
 		File file = new File(dir + "\\" + fileName);
