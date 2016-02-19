@@ -1,5 +1,3 @@
-import static org.junit.Assert.*;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -10,9 +8,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
-
-import org.junit.Before;
-import org.junit.Test;
 
 public class TextBuddy {
 	
@@ -32,56 +27,7 @@ public class TextBuddy {
 	
 	public TextBuddy() {
 	}
-	
-	@Before
-	public void testSetup() {
-		fileName = "testFile.txt";
-		addLine("test line 0");
-		addLine("test line 1");
-	}
-	
-	@Test
-	public void fileTest() {
-		//check if file is created after method call
-		assertFalse(getFile(fileName).exists());
-		openOrCreateFile(fileName);
-		assertTrue(getFile(fileName).exists());
-	}
-	
-	
-	@Test
-	public void addTest() {
-		//check if "add" method returns the right status message
-		assertEquals(addLine("test line"), "added to " + fileName + ": \"test line\"");
-	}
-	
-	@Test
-	public void deleteTest() {
-		//check if "delete" method returns the right status message
-		assertEquals(deleteLine(-1), MESSAGE_INVALID_INPUT);
-		assertEquals(deleteLine(Integer.MAX_VALUE), MESSAGE_DELETE_ERROR);
-		assertEquals(deleteLine(0), "deleted from " + fileName + ": " + "\"test line 0\"");
-	}
-	
-	@Test
-	public void clearTest() {
-		//check if the "clear" method returns the right status message
-		assertEquals(clearContents(), "all content deleted from " + fileName + ".");
-		assertEquals(0, contents.size());
-	}
-	
-	@Test
-	public void searchTest() {
-		//Sample array list to compare against search results
-		ArrayList<String> testList = new ArrayList<String>();
-		testList.add("test line 0");
-		testList.add("test line 1");
-		
-		//check if the "search" method returns the right result
-		assertEquals(getSearchResults("line 0").get(0), "test line 0");
-		assertEquals(getSearchResults("line"), testList);
-	}
-	
+
 	//Initialize the program's state when launched
 	public void run(String[] args) {
 		checkArgumentInput(args);
@@ -145,7 +91,7 @@ public class TextBuddy {
 	}
 	
 	
-	private String addLine(String line) {
+	public String addLine(String line) {
 		contents.add(line);
 		String message = String.format(MESSAGE_ADD, fileName, line);
 		return message;
@@ -188,7 +134,7 @@ public class TextBuddy {
 		printMessage(message);
 	}
 
-	private String clearContents() {
+	public String clearContents() {
 		initializeArray();
 		String message = String.format(MESSAGE_CLEAR, fileName);
 		return message;
@@ -221,7 +167,7 @@ public class TextBuddy {
 	}
 	
 	//Reads from given file name into the contents of TextBuddy
-	private void readFile(File file) throws FileNotFoundException, IOException {
+	public void readFile(File file) throws FileNotFoundException, IOException {
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		String line;
 		while ((line = br.readLine()) != null) {
@@ -231,7 +177,7 @@ public class TextBuddy {
 	}
 	
 	//Writes the contents of TextBuddy into the given file name
-	private void writeFile(File file) throws IOException {
+	public void writeFile(File file) throws IOException {
 		BufferedWriter bw = new BufferedWriter(new FileWriter(file));
 		for (String current : contents) {
 			bw.write(current);
@@ -251,7 +197,7 @@ public class TextBuddy {
 		loopPrompt();
 	}
 	
-	private void saveAndExit() {
+	public void saveAndExit() {
 		saveProgram();
 		endProgram();
 	}
@@ -267,7 +213,7 @@ public class TextBuddy {
 	}
 	
 	//Searches the contents based on the search term and returns the result
-	private ArrayList<String> getSearchResults(String searchTerm) {
+	public ArrayList<String> getSearchResults(String searchTerm) {
 		ArrayList<String> results = new ArrayList<String>();
 		
 		for (String current : contents) {
@@ -279,7 +225,7 @@ public class TextBuddy {
 	}
 	
 	//Formats and display the parameter ArrayList
-	private void displayContents(ArrayList<String> lines) {
+	public void displayContents(ArrayList<String> lines) {
 		int num = 1;
 		for (String current : lines) {
 			printMessage(num + ". " + current);
@@ -317,6 +263,7 @@ public class TextBuddy {
 		}
 	}
 	
+	//reduces given input by 1 to match array index
 	public int getLineNumber() {
 		int input = 0;
 		input = scanner.nextInt();
@@ -332,7 +279,7 @@ public class TextBuddy {
 		System.out.print(MESSAGE_PROMPT);
 	}
 	
-	private File getFile(String fileName) {
+	public File getFile(String fileName) {
 		String dir = System.getProperty("user.dir");
 		File file = new File(dir + "\\" + fileName);
 		return file;
@@ -360,13 +307,9 @@ public class TextBuddy {
 		System.exit(0);
 	}
 	
-	@Test
 	public void printWelcomeMessage() {
 		String message = String.format(MESSAGE_WELCOME, fileName);
 		printMessage(message);
-		
-		//check if the method returns the right status message
-		assertEquals(message, "Welcome to TextBuddy. " + fileName + " is ready for use.");
 	}
 
 	public void printMessage(String message) {
